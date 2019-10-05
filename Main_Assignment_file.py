@@ -2,6 +2,7 @@ import numpy as np
 from numpy import genfromtxt
 import pandas as pd
 from collections import Counter
+import re
 
 #a = genfromtxt('reddit_test.csv', delimiter=',')
 #b = genfromtxt('reddit_test.csv', delimiter=',')
