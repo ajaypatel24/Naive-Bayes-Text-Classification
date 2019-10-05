@@ -15,23 +15,20 @@ comment=reddit_train.iloc[1:,1].values.astype(str)
 #which subreddit its form
 subreddit=reddit_train.iloc[1:,2].values.astype(str)
 word_list=list()
-subreddit_list=list()
-#gets the words from the comments
-for i in comment:
+what_comment_is_from=list()
+counter=0
+for i  in comment:
     word_row=i.split(" ")
     for j in word_row:
         word_list.append(j)
+        what_comment_is_from.append(counter)
+    counter+=1
+#removes non alphanumeric character from the strings
+for i in range(len(word_list)):
+    word_list[i] = re.sub('[^0-9a-zA-Z]+', '', word_list[i])
+    
+d = {}
 
-for x in subreddit:
-    subreddit_list.append(x)
-
-
-
-
-
-#print(word_list)
-d = {} 
-sub = {}
 for x in word_list:
     if (len(x) <= 4): 
         if x.lower() not in d.keys():
@@ -39,15 +36,6 @@ for x in word_list:
         else: 
             d[x.lower()] += 1
 
-for x in subreddit_list:
-    
-        if x.lower() not in sub.keys():
-            sub[x.lower()] = 1
-        else: 
-            sub[x.lower()] += 1
-
-
-print(sub)
 
 k = Counter(d)
 high = k.most_common(100)
