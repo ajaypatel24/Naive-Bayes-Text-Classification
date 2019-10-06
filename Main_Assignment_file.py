@@ -30,7 +30,7 @@ for i in comment:
 print(len(comment))
 #print(len(comment) != len(set(comment))) #if true there are duplicates in the list
 print(len(subreddit))
-'''
+
 for i in range(len(word_list)):
     word_list[i] = re.sub('[^0-9a-zA-Z]+', '', word_list[i])
     
@@ -67,7 +67,7 @@ for i in high:
 
 
 print(len(word_list))
-'''
+
 '''
 delete 50 most common from word_list() and what_comment_is_this_from
 dict to link comment to subreddit
@@ -82,9 +82,6 @@ for x, y in zip(comment_id, subreddit): #instead of using comment, use comment_i
 
 
 print(len(CommentToSubreddit)) #currently there are 842 comments in the list which are duplicates of other comments
-
-
-print(CommentToSubreddit[60000])
 
 #print(len(d))
 
