@@ -26,9 +26,8 @@ for i in comment:
     counter+=1
 #removes non alphanumeric character from the strings
 
-
 print(len(comment))
-#print(len(comment) != len(set(comment))) #if true there are duplicates in the list
+#print(len(comment) != len(set(comment))) #if true there are duplicates in the list, already verified that this is the case
 print(len(subreddit))
 
 for i in range(len(word_list)):
@@ -44,34 +43,39 @@ for x in word_list:
             d[x.lower()] += 1
 
 
+#orders dictionary entries from highest to lowest 
 k = Counter(d)
-high = k.most_common(50)
-for i in high:
-    print(i[0], " ", i[1])
+high = k.most_common(2)
 
-transdict = {}
-for y in d:
-    transdict[y] = ''
 
-#print(transdict)
-
-#print(string.maketrans(transdict))
-def removeFromList(the_list, val):
+def removeFromList(the_list, val): #list operation to remove all occurences of a word very quickly
    return [value for value in the_list if value != val]
 
-print(len(word_list))
+def removeFromComment(CommentList, val): #removes corresponding removed word from the array of quote ID's (VERY SLOW, BOTTLENECKING EVERYTHING)
+    return [value for value in CommentList if word_list[CommentList.index(value)] != val]
 
-for i in high:
-    print(i[0])
-    word_list = removeFromList(word_list, i[0])
+#print("start: ", len(word_list))
+#print("start what: ", len(what_comment_is_from))
+
+[x.lower for x in word_list] #lowercase everything
+
+for y in high: #iterates over created top x words
+    res_list = list(filter(lambda x: word_list[x] == y[0], range(len(word_list)))) #uses lambdas to keep track of all removed indices to apply them to the what_comment_is_from array
+    word_list = removeFromList(word_list, y[0]) 
+    for x in sorted(res_list, reverse=True): #the run time of this is ridiculous even with 2 words, need to change it somehow
+        del what_comment_is_from[x]
+        
 
 
-print(len(word_list))
+
+
+print("post word: ", len(word_list))
+print("post what: ", len(what_comment_is_from))
 
 '''
-delete 50 most common from word_list() and what_comment_is_this_from
-dict to link comment to subreddit
-get counter for word for each subreddit
+delete 50 most common from word_list() and what_comment_is_this_from done
+dict to link comment to subreddit done
+get counter for word for each subreddit (need to do)
 '''
 
 CommentToSubreddit = {}
@@ -81,7 +85,7 @@ for x, y in zip(comment_id, subreddit): #instead of using comment, use comment_i
     
 
 
-print(len(CommentToSubreddit)) #currently there are 842 comments in the list which are duplicates of other comments
+print(len(CommentToSubreddit)) 
 
 #print(len(d))
 
