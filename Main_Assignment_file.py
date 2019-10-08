@@ -46,8 +46,31 @@ for x in word_list:
 #orders dictionary entries from highest to lowest 
 k = Counter(d)
 high = k.most_common(2)
-
-
+####new###
+'''
+goes through the list of the last words in the comments 
+if the last word is a word the we are going to delete
+we move the index back one and the penultimate word becomes the new last word
+if that word is still a word to be deleted we keep moving the index back one till we get one that isnt
+i.e if comment is 'the cat is cool' 
+what_is_the_last_word ='cool'
+index=4
+word_to_del=cool
+=> what_is_last_word='is'
+index='3'
+Warning I havent put in an error testor if we delete a whole comment i.e say a comment is 'No'
+and we want to delete No it will go onto the prev comment
+'''
+for word_to_del in high:
+    for word,i in zip(what_is_the_last_word,range(len(what_is_the_last_word))):
+        if word==word_to_del:#if the last word is one of the words were going to delete change it to be the one before
+           what_is_the_last_word[i]=word_list[index[i]-1]
+           index[i]=index[i]-1 #index goes down aswell
+           
+           while what_is_the_last_word[i]==word_to_del:#could potentially delte a whole comment 
+               what_is_the_last_word[i]=word_list[index[i]-1]
+               index[i]=index[i]-1
+###end new##             
 def removeFromList(the_list, val): #list operation to remove all occurences of a word very quickly
    return [value for value in the_list if value != val]
 
@@ -58,14 +81,14 @@ def removeFromComment(CommentList, val): #removes corresponding removed word fro
 #print("start what: ", len(what_comment_is_from))
 
 [x.lower for x in word_list] #lowercase everything
-
+'''
 for y in high: #iterates over created top x words
     res_list = list(filter(lambda x: word_list[x] == y[0], range(len(word_list)))) #uses lambdas to keep track of all removed indices to apply them to the what_comment_is_from array
     word_list = removeFromList(word_list, y[0]) 
     for x in sorted(res_list, reverse=True): #the run time of this is ridiculous even with 2 words, need to change it somehow
         del what_comment_is_from[x]
         
-
+'''
 
 
 
