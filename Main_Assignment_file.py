@@ -66,6 +66,10 @@ for y in high: #iterates over created top x words
         del what_comment_is_from[x]
         
 
+#store index of final word in comment 
+
+
+
 
 
 
@@ -88,12 +92,6 @@ for x, y in zip(comment_id, subreddit): #instead of using comment, use comment_i
 print(len(CommentToSubreddit)) 
 
 #print(len(d))
-
-
-
-
-
-
 
 
 
