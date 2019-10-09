@@ -50,6 +50,29 @@ k = Counter(d)
 high = k.most_common(2)'''
 high=['']
 [x.lower for x in word_list]
+#####new###
+'''
+ex comment = 'cat is the'
+last_word='the'
+index =3 !=length of comment but index in the array of words
+word to delete 'the'
+after loop
+last_word='is'
+index=2
+ex comment 'cat is the best'
+last_word=best
+index=4
+after loop
+last_word=best
+index=4
+ex comment='the'
+last word=the
+index=1
+delete the
+after loop
+last_word=@@@
+index=0
+'''
 for word_to_del in high:
     for word,i in zip(what_is_the_last_word,range(len(what_is_the_last_word))):
         if word==word_to_del:#if the last word is one of the words were going to delete change it to be the one before
@@ -59,6 +82,9 @@ for word_to_del in high:
            while what_is_the_last_word[i]==word_to_del:#could potentially delte a whole comment 
                what_is_the_last_word[i]=word_list[index[i]-1]
                index[i]=index[i]-1
+               if (index[i]==index[i-1]):
+                   what_is_the_last_word[i]="@@@"
+                   break
                
                
 def removeFromList(the_list, val): #list operation to remove all occurences of a word very quickly
