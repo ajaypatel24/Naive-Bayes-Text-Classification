@@ -131,11 +131,12 @@ print(" " in words_to_remove)
 obj = DataPreprocess(reddit_train, reddit_test)
 g = reddit_test.iloc[:,-1]
 
-TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.05, random_state=4)
+TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.20, random_state=4)
 RealTestX = obj.TestComment
 
-
-tfidf = TfidfVectorizer(tokenizer=LemmaTokenizer(), stop_words=words_to_remove, min_df=3, max_df=0.025)
+#maybe dont include the lemmatization since it seems to do more bad
+'''tokenizer=LemmaTokenizer(),'''
+tfidf = TfidfVectorizer(stop_words=words_to_remove, min_df=2, max_df=0.025)
 x = tfidf.fit_transform(TrainX)
 tx = tfidf.transform(TestX)
 g = tfidf.transform(g)
