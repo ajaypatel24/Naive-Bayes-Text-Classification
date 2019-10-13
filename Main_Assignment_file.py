@@ -2,6 +2,9 @@ import numpy as np
 from numpy import genfromtxt
 import pandas as pd
 from collections import Counter
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
 import re 
 
 #a = genfromtxt('reddit_test.csv', delimiter=',')
@@ -18,6 +21,12 @@ subreddit=reddit_train.iloc[1:,2].values.astype(str)
 word_list=list()
 what_is_the_last_word=list()
 index=list()
+
+
+ps = PorterStemmer()
+
+
+
 counter=0
 for i in comment:
     word_row=i.split(" ")
@@ -34,24 +43,46 @@ print(len(subreddit))
 
 for i in range(len(word_list)):
     word_list[i] = re.sub('[^0-9a-zA-Z]+', '', word_list[i])
+    '''
 '''    
 d = {}
 
 for x in word_list:
     if (len(x) <= 4): 
-        if x.lower() not in d.keys():
-            d[x.lower()] = 1
+        if ps.stem(x.lower()) not in d.keys():
+            d[ps.stem(x.lower())] = 1
         else: 
-            d[x.lower()] += 1
+            d[ps.stem(x.lower())] += 1
+
+
+print(len(d))
+
+
+
+stop_words = set(stopwords.words("english"))
+#print(stop_words)
+print("len1" , len(word_list))
 
 
 #orders dictionary entries from highest to lowest 
 k = Counter(d)
-high = k.most_common(2)'''
+high = k.most_common(50)
+
+words_to_remove = []
+for x in high:
+    words_to_remove.append(x[0])
+
+
+word_list = [ elem for elem in word_list if ps.stem(elem) not in words_to_remove]
+
+print("new len", len(word_list))
+
+
 high=['']
 [x.lower for x in word_list]
 #####new###
 '''
+
 ex comment = 'cat is the'
 last_word='the'
 index =3 !=length of comment but index in the array of words
@@ -73,6 +104,7 @@ after loop
 last_word=@@@
 index=0
 '''
+
 for word_to_del in high:
     for word,i in zip(what_is_the_last_word,range(len(what_is_the_last_word))):
         if word==word_to_del:#if the last word is one of the words were going to delete change it to be the one before
@@ -99,6 +131,7 @@ def removeFromComment(CommentList, val): #removes corresponding removed word fro
 #print("start what: ", len(what_comment_is_from))
 
  #lowercase everything
+ 
 '''
 for y in high: #iterates over created top x words
     res_list = list(filter(lambda x: word_list[x] == y[0], range(len(word_list)))) #uses lambdas to keep track of all removed indices to apply them to the what_comment_is_from array
@@ -112,11 +145,11 @@ for y in high: #iterates over created top x words
 
 
 
-
-
+'''
 print("post word: ", len(word_list))
 print("post what: ", len(what_is_the_last_word))
 print(what_is_the_last_word)
+'''
 
 '''
 delete 50 most common from word_list() and what_comment_is_this_from done
