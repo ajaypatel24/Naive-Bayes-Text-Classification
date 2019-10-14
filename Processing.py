@@ -8,12 +8,14 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 import csv
-
 import re    
 from nltk.stem import WordNetLemmatizer 
-
+from nltk.stem import PorterStemmer
 from sklearn.linear_model import LogisticRegression
-
+from sklearn.linear_model import LogisticRegressionCV
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import LinearSVC
+from sklearn import tree
 
 class DataPreprocess: 
 
@@ -23,84 +25,66 @@ class DataPreprocess:
         self.comment = TrainData.iloc[:,1]
         self.subreddit = TrainData.iloc[:,-1]
         self.TestComment = TestData.iloc[:,-1]
-        self.TrainX = 0
-        self.TrainY = 0
-        self.TestX = 0
-        self.TestY = 0
 
-   
+       
 
-    #comment_id=reddit_train.iloc[1:,0].values.astype(int)
-
-    
-
-    #subreddit=reddit_train.iloc[1:,2].values.astype(str)
-
-    def count_vectorize(self, data):
-            """
-            Vectorizes a reddit comment matrix using pure count
-            """
-            tfidf = TfidfVectorizer(stop_words='english')
-           
-            return tfidf.transform(data)
-            #self.TestDataSet = vectorizer.transform(self.TestDataset.iloc[:,1])
-
-            
-            
-    def count_vectorize2(self, data):
-            """
-            Vectorizes a reddit comment matrix using pure count
-            """
-            tfidf = TfidfVectorizer(stop_words='english')
-            return tfidf.fit_transform(data)
-            #self.TestDataSet = vectorizer.transform(self.TestDataset.iloc[:,1])
-
-            
-            
-    
+    def ModelEvaluation(self, Dataset, Output, TestSet, TestOutput, Model):
 
 
-    def LogisticRegression(self, Dataset, Output, TestSet, TestOutput):
+        if (Model == "LR"):
+            model = LogisticRegression().fit(Dataset, Output)
+        elif (Model == "NB"):
+            model = MultinomialNB().fit(Dataset, Output)
+        elif (Model == "SVC"):
+            model = LinearSVC(random_state=0, tol=1e-5, fit_intercept=True,
+                                loss='squared_hinge').fit(Dataset, Output)
+        elif (Model == "DTC"):
+            model = tree.DecisionTreeClassifier(random_state=0).fit(Dataset, Output)
 
-        clf = LogisticRegression().fit(Dataset, Output)
-
+        predictions = model.predict(TestSet)
         
-        
-        g = clf.predict(TestSet)
-        
-        h = 0
-        ''' testing RealOutput
+        counter = 0
+        #prediction output of test.csv file
+        '''
         with open('output.csv','w') as csvFile:
                 writer = csv.writer(csvFile)
                 writer.writerow(['Id','Category'])
-                for x in g:
-                        row = [str(h), x]
+                for x in predictions:
+                        row = [str(counter), x]
                         writer.writerow(row)
-                        h += 1
+                        counter += 1
         csvFile.close()
         '''
-        #print(clf.predict(TestSet))
-        print(clf.score(TestSet, TestOutput))
+        #print( model.predict(TestSet)) #predictions of LR in an array
+        print(Model, ":", (model.score(TestSet, TestOutput) * 100)) #accuracy of predictions
+
 
        
 
 
-def Lemmatize(text):
-        lemmatizer = WordNetLemmatizer()
-
-
-class LemmaTokenizer(object):
+class LemmaTokenizer(object): #lemmatizer from nltk
     def __init__(self):
         self.wnl = WordNetLemmatizer()
     def __call__(self, articles):
         return [self.wnl.lemmatize(t) for t in word_tokenize(articles)]
 
+        
+class Stemmer(object): #porterstemmer from nltk
+    def __init__(self):
+        self.wnl = PorterStemmer()
+    def __call__(self, articles):
+        return [self.wnl.stem(t) for t in word_tokenize(articles)]
+
 
 
 reddit_test = pd.read_csv('reddit_test.csv')#, sep=',',header=None)
 reddit_train = pd.read_csv('reddit_train.csv')#, sep=',',header=None)
-word_list = list()
+
+
+word_list = list() #will hold all words from the document, will be used to generate stopwords 
+
 comment=reddit_train.iloc[1:,1]
+
 counter = 0
 for i in comment:
     word_row=i.split(" ")
@@ -119,13 +103,19 @@ for x in word_list:
 
 
 k = Counter(d)
-high = k.most_common(3)
+high = k.most_common(50) #3 most common words removed
+low = k.most_common()[:-1000-1:-1]
 
 words_to_remove = []
+least_common = []
 for x in high:
     words_to_remove.append(x[0])
 
-print(" " in words_to_remove)
+for x in low:
+   least_common.append(x[0])
+
+print(words_to_remove)
+#print(least_common)
 
 
 obj = DataPreprocess(reddit_train, reddit_test)
@@ -136,13 +126,34 @@ RealTestX = obj.TestComment
 
 #maybe dont include the lemmatization since it seems to do more bad
 '''tokenizer=LemmaTokenizer(),'''
-tfidf = TfidfVectorizer(stop_words=words_to_remove, min_df=2, max_df=0.025)
-x = tfidf.fit_transform(TrainX)
-tx = tfidf.transform(TestX)
-g = tfidf.transform(g)
-testx = tfidf.transform(RealTestX)
+tfidf = TfidfVectorizer( min_df=1, max_df=1210) #max_df=1210
+#stop_words=words_to_remove, , lowercase=True,
+vectorizer = CountVectorizer(stop_words=words_to_remove)
 
-obj.LogisticRegression(x,TrainY,tx,TestY) #third parameter = g: Realtest or testx
- 
+TfOrCV = "TF"
+
+if (TfOrCV == "TF"): #specify TF for tfidf
+    TrainX = tfidf.fit_transform(TrainX)
+    TestX = tfidf.transform(TestX)
+    RealTest = tfidf.transform(obj.TestComment)
+elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
+    TrainX = vectorizer.fit_transform(TrainX)
+    TestX = vectorizer.transform(TestX)
+    RealTest = vectorizer.transform(obj.TestComment)
 
 
+#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
+#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "NB") #Real test set NB scikit
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "NB") #regular testing NB scikit
+#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
+#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
+#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Real test set NB scikit
+#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTC") #regular testing NB scikit
+
+
+#Best Trial so far min_df=2, max_df=0.025 test_size=0.05 55.233% on kaggle
+
+#Best Trial on held out test set 55.32% on a 15% held out test set, no tokenizer, min_df=2, max_df=0.025
+
+#best trial on held out set min_df = 1, max_df = 1210, 56%
