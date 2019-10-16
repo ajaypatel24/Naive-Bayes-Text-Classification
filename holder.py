@@ -41,7 +41,7 @@ class DataPreprocess:
         if (Model == "LR"):
             model = LogisticRegression().fit(Dataset, Output)
         elif (Model == "NB"):
-            model = MultinomialNB().fit(Dataset, Output)
+            model = MultinomialNB(alpha=0.4).fit(Dataset, Output)
         elif (Model == "SVC"):
             model = LinearSVC(random_state=0, tol=1e-5, fit_intercept=True,
                                 loss='squared_hinge').fit(Dataset, Output)
@@ -52,7 +52,7 @@ class DataPreprocess:
         
         counter = 0
         #prediction output of test.csv file
-        
+        '''
         with open('output.csv','w') as csvFile:
                 writer = csv.writer(csvFile)
                 writer.writerow(['Id','Category'])
@@ -61,9 +61,9 @@ class DataPreprocess:
                         writer.writerow(row)
                         counter += 1
         csvFile.close()
-        
+        '''
         #print( model.predict(TestSet)) #predictions of LR in an array
-        #print(Model, ":", (model.score(TestSet, TestOutput) * 100)) #accuracy of predictions
+        print(Model, ":", (model.score(TestSet, TestOutput) * 100)) #accuracy of predictions
 
 
        
@@ -190,8 +190,8 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
     
     #obj.ModelEvaluation(TRX,TrainY,TX,TestY, "LR") #regular testing LR
-obj.ModelEvaluation(TRX,TrainY,RX,TestY, "NB") #Real test set NB scikit
-    #obj.ModelEvaluation(TRX,TrainY,TX,TestY, "NB") #regular testing NB scikit
+#obj.ModelEvaluation(TRX,TrainY,RX,TestY, "NB") #Real test set NB scikit
+    obj.ModelEvaluation(TRX,TrainY,TX,TestY, "NB") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Real test set NB scikit
