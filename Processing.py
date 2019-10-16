@@ -34,7 +34,7 @@ class DataPreprocess:
         if (Model == "LR"):
             model = LogisticRegression().fit(Dataset, Output)
         elif (Model == "NB"):
-            model = MultinomialNB().fit(Dataset, Output)
+            model = MultinomialNB(alpha=0.4).fit(Dataset, Output)
         elif (Model == "SVC"):
             model = LinearSVC(random_state=0, tol=1e-5, fit_intercept=True,
                                 loss='squared_hinge').fit(Dataset, Output)
@@ -84,7 +84,7 @@ reddit_train = pd.read_csv('reddit_train.csv')#, sep=',',header=None)
 word_list = list() #will hold all words from the document, will be used to generate stopwords 
 
 comment=reddit_train.iloc[1:,1]
-
+'''
 counter = 0
 for i in comment:
     word_row=i.split(" ")
@@ -116,19 +116,19 @@ for x in low:
 
 print(words_to_remove)
 #print(least_common)
-
+'''
 
 obj = DataPreprocess(reddit_train, reddit_test)
 g = reddit_test.iloc[:,-1]
 
-TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.20, random_state=4)
+TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.05, random_state=4)
 RealTestX = obj.TestComment
 
 #maybe dont include the lemmatization since it seems to do more bad
 '''tokenizer=LemmaTokenizer(),'''
-tfidf = TfidfVectorizer( min_df=1, max_df=1210) #max_df=1210
+tfidf = TfidfVectorizer( min_df=1, max_df=1170, lowercase=True) #max_df=1210
 #stop_words=words_to_remove, , lowercase=True,
-vectorizer = CountVectorizer(stop_words=words_to_remove)
+vectorizer = CountVectorizer()
 
 TfOrCV = "TF"
 
@@ -143,7 +143,7 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
-obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
+#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "NB") #Real test set NB scikit
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "NB") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
