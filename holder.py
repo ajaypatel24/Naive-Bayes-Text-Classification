@@ -189,9 +189,9 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
     
-    #obj.ModelEvaluation(TRX,TrainY,TX,TestY, "LR") #regular testing LR
+#obj.ModelEvaluation(TRX,TrainY,TX,TestY, "LR") #regular testing LR
 #obj.ModelEvaluation(TRX,TrainY,RX,TestY, "NB") #Real test set NB scikit
-    obj.ModelEvaluation(TRX,TrainY,TX,TestY, "NB") #regular testing NB scikit
+obj.ModelEvaluation(TRX,TrainY,TX,TestY, "NB") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Real test set NB scikit

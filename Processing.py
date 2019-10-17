@@ -117,16 +117,17 @@ for x in low:
 print(words_to_remove)
 #print(least_common)
 '''
-
+words_to_remove = ["upvote", "downvote", "upvoted", "downvoted", "this", "&gt;", "*", "Reddit", "reddit", "DAE", "tl;dr","lol", "^", "karma"]
 obj = DataPreprocess(reddit_train, reddit_test)
 g = reddit_test.iloc[:,-1]
 
-TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.05, random_state=4)
+TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.01, random_state=2, shuffle=True)
 RealTestX = obj.TestComment
 
 #maybe dont include the lemmatization since it seems to do more bad
 '''tokenizer=LemmaTokenizer(),'''
-tfidf = TfidfVectorizer( min_df=1, max_df=1170, lowercase=True) #max_df=1210
+tfidf = TfidfVectorizer( stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,
+use_idf=True, smooth_idf=True, strip_accents='unicode',  sublinear_tf=True) #max_df=1210
 #stop_words=words_to_remove, , lowercase=True,
 vectorizer = CountVectorizer()
 
@@ -144,7 +145,7 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
 #obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
-#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "NB") #Real test set NB scikit
+#obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "NB") #Real test set NB scikit
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "NB") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
