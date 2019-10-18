@@ -61,7 +61,17 @@ class DataPreprocess:
                         counter += 1
         csvFile.close()
         '''
-        #print( model.predict(TestSet)) #predictions of LR in an array
+        #predictions = model.predict(TestSet) #predictions
+
+        with open('predict.csv', 'w') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerow(['Id','Prediction'])
+            for x in predictions:
+                row = [str(counter), x]
+                writer.writerow(row)
+                counter += 1
+        csvFile.close()
+
         print(Model, ":", (model.score(TestSet, TestOutput) * 100)) #accuracy of predictions
 
 
@@ -131,22 +141,23 @@ for x in low:
 print(words_to_remove)
 #print(least_common)
 '''
-words_to_remove = ["upvote", "downvote", "upvoted", "downvoted", "this", "&gt;", "*", "Reddit", "reddit", "DAE", "tl;dr","lol", "^", "karma", ""]
+words_to_remove = ["upvote", "downvote", "upvoted", "downvoted", "this", "&gt;", "*", "Reddit", "reddit", "DAE", "tl;dr","lol", "^", "karma","the","and", "edit", "gold", "silver", "platinum", ""]
 obj = DataPreprocess(reddit_train, reddit_test)
 g = reddit_test.iloc[:,-1]
 #test_size=0.00007
 selector = SelectPercentile(f_classif, percentile=10)
 
 
-TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.15, random_state=2, shuffle=True)
 
+TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.15, random_state=1, shuffle=True)
+#TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.15, random_state=2, shuffle=True)
 
 
 
 #maybe dont include the lemmatization since it seems to do more bad
 '''tokenizer=LemmaTokenizer(),'''
 tfidf = TfidfVectorizer( stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,
-use_idf=True, smooth_idf=True, strip_accents='unicode',  sublinear_tf=True, analyzer='word') #max_features=49500 max_df=1210
+use_idf=True, smooth_idf=True, strip_accents='unicode', sublinear_tf=True, analyzer='word') #max_features=49500 max_df=1210
 #stop_words=words_to_remove, , lowercase=True,
 vectorizer = CountVectorizer()
 
@@ -163,7 +174,7 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
-obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
+#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
 #obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "MNB") #Real test set NB scikit
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "MNB") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
@@ -171,7 +182,7 @@ obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "MNB") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Real test set NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTC") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTR") #Real test set NB scikit
-obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTR") #regular testing NB scikit
+#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTR") #regular testing NB scikit
 
 #Best Trial so far min_df=2, max_df=0.025 test_size=0.05 55.233% on kaggle
 
@@ -182,3 +193,5 @@ obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTR") #regular testing NB scikit
 #best trial 
 #stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,use_idf=True, smooth_idf=True, strip_accents='unicode',  sublinear_tf=True,
 #test_size=0.00007 accuracy 57.877% on kaggle
+
+
