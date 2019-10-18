@@ -59,7 +59,23 @@ class NaiveBayes:
         subreddit_likelihoods = np.zeros(self.classes.shape[0])
 
         for subreddit_index, subreddit in enumerate(self.classes):
-            for test_token in comment: #split the test example and get p of each test word
+            for word in comment: #split the test example and get p of each test word
+
+                #get total count of this test token from it's respective training dict to get numerator value                           
+                word_counts = self.subreddit_values[subreddit_index][0].get(word,0) + 1
+                
+                #now get likelihood of this test_token word                              
+                word_prob = word_counts/float(self.subreddit_values[subreddit_index][2])                              
+                
+                #remember why taking log? To prevent underflow!
+                subreddit_likelihoods[subreddit_index] += np.log(word_prob)
+
+        conditional_prob = np.empty(self.classes.shape[0])
+
+        for subreddit_index, subreddit in enumerate(self.classes):
+            conditional_prob[subreddit_index] = subreddit_likelihoods[subreddit_index] + np.log(self.cats_info[subreddit_index][1])                                  
+      
+        return conditional_prob
 
     #takes a set of input points X as input and outputs predictions y hat
     def predict(self, dataset):
@@ -72,6 +88,12 @@ class NaiveBayes:
 
     #takes true labels and target labels and outputs accuracy
     def evaluate_acc(labels, predictions):
+        num_labels = labels.shape[0]
+        acc = 0
+        for i in range(num_labels):
+            if(labels[0][i] == predictions[0][i]):
+                acc+=1
+        return acc/float(num_labels)
 
     #script to run k-fold cross validation
-    def cross_validation(k):
+    #def cross_validation(k):
