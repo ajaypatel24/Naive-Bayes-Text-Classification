@@ -7,6 +7,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_selection import SelectPercentile, f_classif
 import csv
 import re    
 from nltk.stem import WordNetLemmatizer 
@@ -14,6 +15,8 @@ from nltk.stem import PorterStemmer
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import LinearSVC
 from sklearn import tree
 
@@ -33,13 +36,14 @@ class DataPreprocess:
 
         if (Model == "LR"):
             model = LogisticRegression().fit(Dataset, Output)
-        elif (Model == "NB"):
+        elif (Model == "MNB"):
             model = MultinomialNB(alpha=0.4).fit(Dataset, Output)
         elif (Model == "SVC"):
             model = LinearSVC(random_state=0, tol=1e-5, fit_intercept=True,
                                 loss='squared_hinge').fit(Dataset, Output)
         elif (Model == "DTC"):
             model = tree.DecisionTreeClassifier(random_state=0).fit(Dataset, Output)
+        
 
         predictions = model.predict(TestSet)
         
@@ -75,7 +79,15 @@ class Stemmer(object): #porterstemmer from nltk
     def __call__(self, articles):
         return [self.wnl.stem(t) for t in word_tokenize(articles)]
 
-
+class preprocess_text(object):
+    def __init__(self):
+        self.text = re.sub('((www\.[^\s]+)|(https?://[^\s]+))','URL', text)
+        self.text = re.sub('@[^\s]+','USER', text)
+        self.text = text.lower().replace("ё", "е")
+        self.text = re.sub('[^a-zA-Zа-яА-Я1-9]+', ' ', text)
+        self.text = re.sub(' +',' ', text)
+    def __call__(self,articles):
+        return self.text.strip()
 
 reddit_test = pd.read_csv('reddit_test.csv')#, sep=',',header=None)
 reddit_train = pd.read_csv('reddit_train.csv')#, sep=',',header=None)
@@ -120,14 +132,19 @@ print(words_to_remove)
 words_to_remove = ["upvote", "downvote", "upvoted", "downvoted", "this", "&gt;", "*", "Reddit", "reddit", "DAE", "tl;dr","lol", "^", "karma"]
 obj = DataPreprocess(reddit_train, reddit_test)
 g = reddit_test.iloc[:,-1]
+#test_size=0.00007
+selector = SelectPercentile(f_classif, percentile=10)
 
-TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.01, random_state=2, shuffle=True)
-RealTestX = obj.TestComment
+
+TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.15, random_state=2, shuffle=True)
+
+
+
 
 #maybe dont include the lemmatization since it seems to do more bad
 '''tokenizer=LemmaTokenizer(),'''
 tfidf = TfidfVectorizer( stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,
-use_idf=True, smooth_idf=True, strip_accents='unicode',  sublinear_tf=True) #max_df=1210
+use_idf=True, smooth_idf=True, strip_accents='unicode',  sublinear_tf=True, analyzer='word') #max_features=49500 max_df=1210
 #stop_words=words_to_remove, , lowercase=True,
 vectorizer = CountVectorizer()
 
@@ -144,9 +161,9 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
-#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
-#obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "NB") #Real test set NB scikit
-obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "NB") #regular testing NB scikit
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
+#obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "MNB") #Real test set NB scikit
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "MNB") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Real test set NB scikit
@@ -158,3 +175,7 @@ obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "NB") #regular testing NB scikit
 #Best Trial on held out test set 55.32% on a 15% held out test set, no tokenizer, min_df=2, max_df=0.025
 
 #best trial on held out set min_df = 1, max_df = 1210, 56%
+
+#best trial 
+#stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,use_idf=True, smooth_idf=True, strip_accents='unicode',  sublinear_tf=True,
+#test_size=0.00007 accuracy 57.877% on kaggle
