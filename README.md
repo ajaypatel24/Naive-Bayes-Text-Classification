@@ -15,3 +15,9 @@
 ### tensorflow==2.0.0
 ### tensorflow-estimator==2.0.1
 
+Scikit model are in Processing.py
+Naive Bayes implementation in NaiveBayes.py
+
+Simply run both individually 
+when processing.py is run, the models that are working will be printed
+with names and accuracies on the 15% held out test set
