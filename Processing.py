@@ -29,6 +29,10 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.ensemble import BaggingClassifier
 from sklearn.datasets import make_classification
+import time
+import matplotlib.pyplot as plt 
+
+
 class DataPreprocess: 
 
     def __init__(self, TrainData, TestData):
@@ -39,8 +43,7 @@ class DataPreprocess:
         self.TestComment = TestData.iloc[:,-1]
 
        
-#(TrainX,TrainY,TestX,TestY, "MNB")
-    def KerasDeep(self, Dataset, Output, TestSet, TestOutput):
+    def KerasDeep(self, Dataset, Output, TestSet, TestOutput): #attempt at keras and tensorflow deep learning 
             in_dim = Dataset.shape[1]
             encoder = preprocessing.LabelEncoder()
             encoder.fit(Output)
@@ -68,7 +71,7 @@ class DataPreprocess:
             
             #return model
 
-    def DeepModel(self, Dataset, Output, TestSet, TestOutput ):
+    def DeepModel(self, Dataset, Output, TestSet, TestOutput ): #attempt at keras and tensorflow deep learning 
         
         self.comment = SelectKBest(chi2, k=15000).fit_transform(self.comment, self.subreddit)
 
@@ -105,20 +108,20 @@ class DataPreprocess:
 
 
         if (Model == "LR"):  #Linear Regression
-            model = LogisticRegression().fit(Dataset, Output)
+            model = LogisticRegression(max_iter=1000, tol=0.000001, class_weight='balanced').fit(Dataset, Output)
         elif (Model == "MNB"): #Multinomial Naive Bayes
             model = MultinomialNB(alpha=0.14).fit(Dataset, Output)
         elif (Model == "SVC"): #Support Vector Machines
-            model = LinearSVC(random_state=0, tol=1e-5, fit_intercept=True,
-                                loss='squared_hinge').fit(Dataset, Output)
+            model = LinearSVC(random_state=0, tol=0.0001, fit_intercept=True,
+                                loss='hinge', class_weight='balanced', max_iter=100000).fit(Dataset, Output)
         elif (Model == "DTC"): #Decision Trees
-            model = tree.DecisionTreeClassifier(random_state=0).fit(Dataset, Output)
+            model = tree.DecisionTreeClassifier(random_state=0, max_features=60000, class_weight='balanced').fit(Dataset, Output)
         
         predictions = model.predict(TestSet)
         
         counter = 0
-        #prediction output of test.csv file
-        '''
+        
+        ''' kaggle competition output csv
         with open('output.csv','w') as csvFile:
                 writer = csv.writer(csvFile)
                 writer.writerow(['Id','Category'])
@@ -128,19 +131,8 @@ class DataPreprocess:
                         counter += 1
         csvFile.close()
         '''
-        
-        '''
-        with open('predict.csv', 'w') as csvFile:
-            writer = csv.writer(csvFile)
-            writer.writerow(['Id','Prediction'])
-            for x in predictions:
-                row = [str(counter), x]
-                writer.writerow(row)
-                counter += 1
-        csvFile.close()
-        '''
-
-        print(Model, ":", (model.score(TestSet, TestOutput) * 100)) #accuracy of predictions
+        #normal model accuracy testing
+        print(Model, ":", (model.score(TestSet, TestOutput) * 100)) 
 
 
        
@@ -159,13 +151,15 @@ class Stemmer(object): #porterstemmer from nltk
     def __call__(self, articles):
         return [self.wnl.stem(t) for t in word_tokenize(articles)]
 
+
+
 reddit_test = pd.read_csv('reddit_test.csv')#, sep=',',header=None)
 reddit_train = pd.read_csv('reddit_train.csv')#, sep=',',header=None)
 
 
 word_list = list() #will hold all words from the document, will be used to generate stopwords 
 
-comment=reddit_train.iloc[1:,1]
+
 
 
 ''' stop words attempt #1
@@ -207,7 +201,9 @@ words_to_remove = ["upvote", "downvote", "upvoted", "downvoted", "this", "&gt;",
 obj = DataPreprocess(reddit_train, reddit_test)
 g = reddit_test.iloc[:,-1]
 
-TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.15 random_state=1, shuffle=True)
+TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.15, random_state=7, shuffle=True)
+#kf = KFold(n_splits=5)
+#kf.get_n_splits(obj.comment)
 
 
 
@@ -215,34 +211,56 @@ TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test
 
 
 #tfidf = TfidfVectorizer() #attempt with no parameters
-tfidf = TfidfVectorizer(stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,
+tfidf = TfidfVectorizer( stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,
 use_idf=True, smooth_idf=True, strip_accents='unicode', sublinear_tf=True, analyzer='word') #attempt with parameters
 
-vectorizer = CountVectorizer()
-#
-#
+vectorizer = CountVectorizer(stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True, strip_accents='unicode', analyzer='word') #attempt at count vectorization
+#vectorizer = CountVectorizer()
 
 TfOrCV = "TF"
 
 if (TfOrCV == "TF"): #specify TF for tfidf, stick with this
+    print("Using TFIDF")
     TrainX = tfidf.fit_transform(TrainX)
     TestX = tfidf.transform(TestX)
     RealTest = tfidf.transform(obj.TestComment)
     
 elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
+    print("Using CrossVector")
     TrainX = vectorizer.fit_transform(TrainX)
     TestX = vectorizer.transform(TestX)
     RealTest = vectorizer.transform(obj.TestComment)
 
+#all models attempted tests
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
-#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
-obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "MNB") #Real test set NB scikit
-#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "MNB") #regular testing NB scikit
+'''
+start = time.time()
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
+end = time.time()
+print("time: ", (end-start))
+'''
+#obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "MNB") #Real test set NB scikit
+
+start = time.time()
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "MNB") #regular testing NB scikit
+end = time.time()
+print("time: ", (end-start))
+
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
-#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
+'''
+start = time.time()
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
+end = time.time()
+print("time: ", (end-start))
+'''
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Real test set NB scikit
-#obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTC") #regular testing NB scikit
+'''
+start = time.time()
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTC") #regular testing NB scikit
+end = time.time()
+print("time: ", (end-start))
+'''
 #obj.KerasDeep(TrainX,TrainY,TestX,TestY)
 #obj.comment = tfidf.fit_transform(obj.comment)
 #obj.TestComment = tfidf.transform(obj.TestComment)
