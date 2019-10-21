@@ -43,35 +43,9 @@ class DataPreprocess:
         self.TestComment = TestData.iloc[:,-1]
 
        
-    def KerasDeep(self, Dataset, Output, TestSet, TestOutput): #attempt at keras and tensorflow deep learning 
-            in_dim = Dataset.shape[1]
-            encoder = preprocessing.LabelEncoder()
-            encoder.fit(Output)
-            encoded_Y = encoder.transform(Output)
-            
-            # convert integers to dummy variables (i.e. one hot encoded)
-            #dummy_y = np_utils.to_categorical(encoded_Y)
-            print(Dataset)
-            print(Output)
-            model = Sequential()
-            model.add(layers.Dense(20, input_dim=in_dim, activation='relu'))
-            model.add(layers.Dense(1, activation='softmax'))
-            
-            model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-            model.summary()
+  
 
-            
-            hist = model.fit(Dataset, encoded_Y, epochs=5, verbose=True, batch_size=10)
-
-            loss, accuracy = model.evaluate(Dataset, Output, verbose=False)
-            print("Train Acc: ", accuracy)
-            loss, accuracy = model.evaluate(TestSet, TestOutput, verbose=False)
-            print("Test Acc: ", accuracy)
-            
-            
-            #return model
-
-    def DeepModel(self, Dataset, Output, TestSet, TestOutput ): #attempt at keras and tensorflow deep learning 
+    def KerasDeep(self, Dataset, Output, TestSet, TestOutput ): #attempt at keras and tensorflow deep learning 
         
         self.comment = SelectKBest(chi2, k=15000).fit_transform(self.comment, self.subreddit)
 
@@ -79,9 +53,7 @@ class DataPreprocess:
         encoder.fit(self.subreddit)
         encoded_Y = encoder.transform(self.subreddit)
             
-        #dummy_y = np_utils.to_categorical(encoded_Y)
-            # convert integers to dummy variables (i.e. one hot encoded)
-            #dummy_y = np_utils.to_categorical(encoded_Y)
+   
         def mod():
                 
             model = Sequential()
@@ -90,19 +62,16 @@ class DataPreprocess:
                 
             model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
             
-            #model.summary()
+            model.summary()
             return model
 
-        #M = mod()
-        #M.fit(Dataset, Output, batch_size=10, epochs=2, verbose=1 )
         kfold = KFold(n_splits=2, shuffle=True)
         estimator = KerasClassifier(build_fin=mod, epochs=2)
         ensemble = BaggingClassifier(estimator, n_estimators=10)
         X, y = make_classification
         ensemble.fit(X, y)
         print(ensemble.predict(X))
-        #results = cross_val_score(estimator, self.comment, self.subreddit, cv=kfold)
-        #print("Base: " % (results.mean()*100, results.std()*100))
+      
 
     def ModelEvaluation(self, Dataset, Output, TestSet, TestOutput, Model):
 
@@ -121,7 +90,7 @@ class DataPreprocess:
         
         counter = 0
         
-        ''' kaggle competition output csv
+        ''' kaggle competition output csv, uncomment this to use and comment out the (normal model accuracy testing)
         with open('output.csv','w') as csvFile:
                 writer = csv.writer(csvFile)
                 writer.writerow(['Id','Category'])
@@ -156,11 +125,7 @@ class Stemmer(object): #porterstemmer from nltk
 reddit_test = pd.read_csv('reddit_test.csv')#, sep=',',header=None)
 reddit_train = pd.read_csv('reddit_train.csv')#, sep=',',header=None)
 
-
 word_list = list() #will hold all words from the document, will be used to generate stopwords 
-
-
-
 
 ''' stop words attempt #1
 counter = 0
@@ -202,12 +167,6 @@ obj = DataPreprocess(reddit_train, reddit_test)
 g = reddit_test.iloc[:,-1]
 
 TrainX, TestX, TrainY, TestY = train_test_split(obj.comment, obj.subreddit, test_size=0.15, random_state=7, shuffle=True)
-#kf = KFold(n_splits=5)
-#kf.get_n_splits(obj.comment)
-
-
-
-
 
 
 #tfidf = TfidfVectorizer() #attempt with no parameters
@@ -234,47 +193,25 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 #all models attempted tests
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
-'''
-start = time.time()
+''' Logistic Regression 
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
-end = time.time()
-print("time: ", (end-start))
 '''
 #obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "MNB") #Real test set NB scikit
-
-start = time.time()
+''' Multinomial Naive Bayes
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "MNB") #regular testing NB scikit
-end = time.time()
-print("time: ", (end-start))
+'''
+#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Support Vector Machines
+''' Support Vector Machines
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #Support Vector Machines
+'''
+#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Decision Trees
+''' Decision Trees
+obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTC") #Decision Trees
+'''
 
-#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Real test set NB scikit
-'''
-start = time.time()
-obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #regular testing NB scikit
-end = time.time()
-print("time: ", (end-start))
-'''
-#obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Real test set NB scikit
-'''
-start = time.time()
-obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTC") #regular testing NB scikit
-end = time.time()
-print("time: ", (end-start))
-'''
+
+#uncomment this to try and see if Keras is working
 #obj.KerasDeep(TrainX,TrainY,TestX,TestY)
 #obj.comment = tfidf.fit_transform(obj.comment)
 #obj.TestComment = tfidf.transform(obj.TestComment)
-#obj.DeepModel(TrainX,TrainY,TestX,TestY)
 
-#Best Trial so far min_df=2, max_df=0.025 test_size=0.05 55.233% on kaggle
-
-#Best Trial on held out test set 55.32% on a 15% held out test set, no tokenizer, min_df=2, max_df=0.025
-
-#best trial on held out set min_df = 1, max_df = 1210, 56%
-
-#best trial 
-#stop_words=words_to_remove, min_df=1, max_df=0.1, lowercase=True,use_idf=True, smooth_idf=True, strip_accents='unicode',  sublinear_tf=True,
-#test_size=0.00007 accuracy 57.877% on kaggle
-
-#best trial 
-#no parameters to tfidf, alpha value around 0.1, 57.49% on 0.2 held out test set
