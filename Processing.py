@@ -193,21 +193,21 @@ elif (TfOrCV == "CV"): #specifc CV for Count Vectorization
 #all models attempted tests
 
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "LR") #Real test set LR
-''' Logistic Regression 
+#Logistic Regression 
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "LR") #regular testing LR
-'''
+
 #obj.ModelEvaluation(TrainX, TrainY,RealTest,TestY, "MNB") #Real test set NB scikit
-''' Multinomial Naive Bayes
+#Multinomial Naive Bayes
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "MNB") #regular testing NB scikit
-'''
+
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "SVC") #Support Vector Machines
-''' Support Vector Machines
+#Support Vector Machines
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "SVC") #Support Vector Machines
-'''
+
 #obj.ModelEvaluation(TrainX,TrainY,RealTest,TestY, "DTC") #Decision Trees
-''' Decision Trees
+#Decision Trees
 obj.ModelEvaluation(TrainX,TrainY,TestX,TestY, "DTC") #Decision Trees
-'''
+
 
 
 #uncomment this to try and see if Keras is working
